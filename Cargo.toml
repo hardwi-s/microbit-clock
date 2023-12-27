@@ -1,7 +1,7 @@
 [package]
-authors = ["{{authors}}"]
+authors = ["stewart"]
 edition = "2021"
-name = "{{project-name}}"
+name = "microbit-clock"
 version = "0.1.0"
 
 [dependencies]
@@ -10,7 +10,7 @@ panic-halt = "0.2.0"
 microbit-v2 = "0.13.0"
 
 [[bin]]
-name = "{{project-name}}"
+name = "microbit-clock"
 test = false
 bench = false
 
