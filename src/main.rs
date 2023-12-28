@@ -37,8 +37,8 @@ fn set_colon(state: bool, leds: &mut [[u8; 5]; 5]) {
     if state {
         i = 1;
     }
-    leds[2][3] = i;
-    leds[2][4] = i;
+    leds[3][2] = i;
+    leds[4][2] = i;
 }
 
 fn set_time(hours: u32, minutes: u32, leds: &mut [[u8; 5]; 5]) {
@@ -58,11 +58,11 @@ fn set_column(col: usize, digit: u32, leds: &mut [[u8; 5]; 5]) {
     let bit_2 = get_bit(digit, 2);
     let bit_3 = get_bit(digit, 3);
     let bit_4 = get_bit(digit, 4);
-    leds[col][4] = bit_0;
-    leds[col][3] = bit_1;
-    leds[col][2] = bit_2;
-    leds[col][1] = bit_3;
-    leds[col][0] = bit_4;
+    leds[4][col] = bit_0;
+    leds[3][col] = bit_1;
+    leds[2][col] = bit_2;
+    leds[1][col] = bit_3;
+    leds[0][col] = bit_4;
 }
 
 fn get_bit(digit: u32, bit: i32) -> u8 {
