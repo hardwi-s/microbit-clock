@@ -8,7 +8,9 @@ use microbit::{
     hal::{Timer, Twim},
     pac::{twim0::frequency::FREQUENCY_A, TWIM0}
 };
-use panic_halt as _;
+use rtt_target::{rtt_init_print, rprintln};
+use panic_rtt_target as _;
+
 
 const RTC_ADDRESS: u8 = 0x52;
 const RTC_MINUTES_REGISTER: u8 = 0x01;
@@ -16,6 +18,8 @@ const RTC_HOURS_REGISTER: u8 = 0x02;
 
 #[entry]
 fn main() -> ! {
+    rtt_init_print!();
+
     let board = Board::take().unwrap();
     let mut timer = Timer::new(board.TIMER0);
     let mut display = Display::new(board.display_pins);
@@ -31,6 +35,7 @@ fn main() -> ! {
 
 
     loop {
+        rprintln!("tick");
         let (hours, minutes) = get_time(&mut i2c);
         set_time(hours, minutes, &mut led_pattern);
         set_colon(true, &mut led_pattern);
