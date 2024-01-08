@@ -2,15 +2,16 @@
 #![no_main]
 
 use cortex_m_rt::entry;
+
+use microbit::hal::prelude::*;
+
 use microbit::{
     board::Board,
     display::blocking::Display,
-    hal::{Timer, Twim},
-    pac::{twim0::frequency::FREQUENCY_A, TWIM0}
+    hal::{Timer, twim},
+    pac::{twim0::frequency::FREQUENCY_A, TWIM0},
 };
-use rtt_target::{rtt_init_print, rprintln};
-use panic_rtt_target as _;
-
+use panic_halt as _;
 
 const RTC_ADDRESS: u8 = 0x52;
 const RTC_MINUTES_REGISTER: u8 = 0x01;
@@ -18,12 +19,10 @@ const RTC_HOURS_REGISTER: u8 = 0x02;
 
 #[entry]
 fn main() -> ! {
-    rtt_init_print!();
-
     let board = Board::take().unwrap();
     let mut timer = Timer::new(board.TIMER0);
     let mut display = Display::new(board.display_pins);
-    let mut i2c = Twim::new(board.TWIM0, board.i2c_internal.into(), FREQUENCY_A::K100);
+    let mut i2c = { twim::Twim::new(board.TWIM0, board.i2c_external.into(), FREQUENCY_A::K100) };
 
     let mut led_pattern: [[u8; 5]; 5] = [
         [0, 0, 0, 0, 0],
@@ -35,7 +34,6 @@ fn main() -> ! {
 
 
     loop {
-        rprintln!("tick");
         let (hours, minutes) = get_time(&mut i2c);
         set_time(hours, minutes, &mut led_pattern);
         set_colon(true, &mut led_pattern);
@@ -86,15 +84,15 @@ fn get_bit(digit: u32, bit: i32) -> u8 {
     return bit_value;
 }
 
-fn get_time(i2c: &mut Twim<TWIM0>) -> (u32, u32) {
+fn get_time(i2c: &mut twim::Twim<TWIM0>) -> (u32, u32) {
     let hours = get_hours(i2c);
     let mins = get_minutes(i2c);
     return (hours, mins);
 }
  
-fn get_minutes(i2c: &mut Twim<TWIM0>) -> u32 {
+fn get_minutes(i2c: &mut twim::Twim<TWIM0>) -> u32 {
     let mut minutes_reg = [0];
-    i2c.write_then_read(RTC_ADDRESS, 
+    i2c.write_read(RTC_ADDRESS, 
         &[RTC_MINUTES_REGISTER], 
         &mut minutes_reg).unwrap();
         
@@ -105,9 +103,9 @@ fn get_minutes(i2c: &mut Twim<TWIM0>) -> u32 {
     return ((minutes_tens * 10) + minutes_units).into();
 }
 
-fn get_hours(i2c: &mut Twim<TWIM0>) -> u32 {
+fn get_hours(i2c: &mut twim::Twim<TWIM0>) -> u32 {
     let mut hours_reg = [0];
-    i2c.write_then_read(RTC_ADDRESS, 
+    i2c.write_read(RTC_ADDRESS, 
         &[RTC_HOURS_REGISTER], 
         &mut hours_reg).unwrap();
     //              Bit 7 Bit 6 Bit 5 Bit 4 Bit 3 Bit 2 Bit 1 Bit 0 
